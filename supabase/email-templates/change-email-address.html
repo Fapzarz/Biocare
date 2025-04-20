@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Confirm Email Change - BioCare</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      line-height: 1.6;
+      color: #334155;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .logo {
+      color: #E11D48;
+      font-size: 32px;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+    .content {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 40px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+    .button {
+      display: inline-block;
+      background: linear-gradient(to right, #E11D48, #9333EA);
+      color: #ffffff;
+      text-decoration: none;
+      padding: 12px 32px;
+      border-radius: 50px;
+      font-weight: 600;
+      margin: 24px 0;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 40px;
+      font-size: 14px;
+      color: #64748B;
+    }
+    .alert {
+      background: #FEF2F2;
+      border-left: 4px solid #E11D48;
+      padding: 16px;
+      margin: 24px 0;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">BioCare</div>
+      <h1>Confirm Email Change</h1>
+    </div>
+    
+    <div class="content">
+      <p>Dear {{ .Email }},</p>
+      
+      <p>We received a request to change the email address associated with your BioCare account. To ensure the security of your health information, we need to verify this change.</p>
+      
+      <div class="alert">
+        <strong>Important:</strong> Your email is used for:
+        <ul>
+          <li>Secure access to your health records</li>
+          <li>Communication with healthcare providers</li>
+          <li>Important health notifications</li>
+          <li>Account security alerts</li>
+        </ul>
+      </div>
+      
+      <p>To confirm this email change, please click the button below:</p>
+      
+      <div style="text-align: center;">
+        <a href="{{ .ConfirmationURL }}" class="button">Confirm Email Change</a>
+      </div>
+      
+      <p>This link will expire in 24 hours. If you didn't request this change, please contact our support team immediately.</p>
+    </div>
+    
+    <div class="footer">
+      <p>BioCare - Your Health, Our Priority</p>
+      <p>Security concern? Contact us immediately at security@biocare.com</p>
+    </div>
+  </div>
+</body>
+</html>

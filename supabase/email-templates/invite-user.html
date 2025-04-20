@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Join BioCare</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      line-height: 1.6;
+      color: #334155;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .logo {
+      color: #E11D48;
+      font-size: 32px;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+    .content {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 40px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+    .button {
+      display: inline-block;
+      background: linear-gradient(to right, #E11D48, #9333EA);
+      color: #ffffff;
+      text-decoration: none;
+      padding: 12px 32px;
+      border-radius: 50px;
+      font-weight: 600;
+      margin: 24px 0;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 40px;
+      font-size: 14px;
+      color: #64748B;
+    }
+    .feature {
+      margin: 24px 0;
+      padding: 16px;
+      background: #F8FAFC;
+      border-radius: 8px;
+    }
+    .feature-title {
+      font-weight: 600;
+      color: #E11D48;
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">BioCare</div>
+      <h1>You're Invited to BioCare</h1>
+    </div>
+    
+    <div class="content">
+      <p>Hello,</p>
+      
+      <p>You've been invited to join BioCare, a comprehensive healthcare platform designed to make quality healthcare accessible to everyone.</p>
+      
+      <div class="feature">
+        <div class="feature-title">Why BioCare?</div>
+        <ul>
+          <li>Connect with verified healthcare professionals</li>
+          <li>Access comprehensive medical information</li>
+          <li>Secure and private consultations</li>
+          <li>24/7 health support community</li>
+        </ul>
+      </div>
+      
+      <p>To accept this invitation and join our healthcare community, click the button below:</p>
+      
+      <div style="text-align: center;">
+        <a href="{{ .InviteURL }}" class="button">Accept Invitation</a>
+      </div>
+      
+      <p>This invitation will expire in 24 hours. If you believe this invitation was sent in error, please ignore this email.</p>
+    </div>
+    
+    <div class="footer">
+      <p>BioCare - Your Health, Our Priority</p>
+      <p>Questions? Contact us at support@biocare.com</p>
+    </div>
+  </div>
+</body>
+</html>

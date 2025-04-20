@@ -1,0 +1,189 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Base styles */
+@layer base {
+  body {
+    @apply bg-slate-50 text-slate-900 transition-colors duration-200;
+  }
+
+  body.dark {
+    @apply bg-slate-900 text-slate-100;
+  }
+
+  ::selection {
+    @apply bg-rose-500/20 text-rose-900 dark:text-rose-100;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  @apply w-1.5;
+  @apply h-1.5;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-300/50 dark:bg-slate-600/50 rounded-full;
+  @apply hover:bg-slate-400/50 dark:hover:bg-slate-500/50;
+  @apply transition-colors duration-200;
+}
+
+/* Hide scrollbar by default */
+.hide-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Show scrollbar on hover */
+.show-scrollbar-on-hover {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.show-scrollbar-on-hover:hover {
+  scrollbar-width: thin;
+  -ms-overflow-style: auto;
+}
+
+.show-scrollbar-on-hover::-webkit-scrollbar {
+  display: none;
+}
+
+.show-scrollbar-on-hover:hover::-webkit-scrollbar {
+  display: block;
+}
+
+/* Loading animations */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Accessibility */
+.sr-only {
+  @apply absolute w-px h-px p-0 -m-px overflow-hidden whitespace-nowrap border-0;
+}
+
+/* Focus styles */
+.focus-ring {
+  @apply focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900;
+}
+
+/* Touch feedback */
+@media (max-width: 640px) {
+  .touch-feedback {
+    @apply active:scale-95;
+    transition: transform 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+/* Animations */
+.fade-in {
+  @apply animate-fade-in;
+}
+
+.slide-up {
+  @apply animate-slide-up;
+}
+
+.slide-down {
+  @apply animate-slide-down;
+}
+
+.scale-up {
+  @apply animate-scale-up;
+}
+
+.bounce-small {
+  @apply animate-bounce-small;
+}
+
+/* Error states */
+.error-shake {
+  animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+@keyframes shake {
+  10%, 90% { transform: translate3d(-1px, 0, 0); }
+  20%, 80% { transform: translate3d(2px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+  40%, 60% { transform: translate3d(4px, 0, 0); }
+}
+
+/* Loading states */
+.loading-overlay {
+  @apply fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50;
+}
+
+.loading-spinner {
+  @apply animate-spin rounded-full border-4 border-slate-200 dark:border-slate-700;
+  border-top-color: theme('colors.rose.600');
+}
+
+.loading-pulse {
+  @apply animate-pulse-slow;
+}
+
+.loading-shimmer {
+  @apply animate-shimmer;
+}
+
+/* Custom transitions */
+.custom-transition {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 200ms;
+}
+
+.transform-transition {
+  transition-property: transform;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 200ms;
+}
+
+.opacity-transition {
+  transition-property: opacity;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 200ms;
+}
+
+.colors-transition {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 200ms;
+}
+
+/* Sidebar transitions */
+.sidebar-hidden {
+  transform: translateX(-100%);
+  opacity: 0;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar-visible {
+  transform: translateX(0);
+  opacity: 1;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar-transition {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Hover area for sidebar */
+.sidebar-hover-area {
+  @apply fixed left-0 bottom-0 w-4 z-50;
+}

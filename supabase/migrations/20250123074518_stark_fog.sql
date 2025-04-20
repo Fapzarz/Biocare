@@ -1,0 +1,88 @@
+-- Drop existing table if exists to avoid conflicts
+DROP TABLE IF EXISTS public.post_likes CASCADE;
+
+-- Create post_likes table
+CREATE TABLE IF NOT EXISTS public.post_likes (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  post_id uuid REFERENCES consultations(id) ON DELETE CASCADE,
+  user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE,
+  created_at timestamptz DEFAULT now(),
+  UNIQUE(post_id, user_id)
+);
+
+-- Enable RLS
+ALTER TABLE post_likes ENABLE ROW LEVEL SECURITY;
+
+-- Drop existing policies if any
+DROP POLICY IF EXISTS "Anyone can view likes" ON post_likes;
+DROP POLICY IF EXISTS "Authenticated users can manage likes" ON post_likes;
+
+-- Create policies for post_likes
+CREATE POLICY "Anyone can view likes"
+ON post_likes FOR SELECT
+TO public
+USING (true);
+
+CREATE POLICY "Authenticated users can create likes"
+ON post_likes FOR INSERT
+TO authenticated
+WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Authenticated users can delete own likes"
+ON post_likes FOR DELETE
+TO authenticated
+USING (auth.uid() = user_id);
+
+-- Create indexes for better performance
+CREATE INDEX IF NOT EXISTS idx_post_likes_user ON post_likes(user_id);
+CREATE INDEX IF NOT EXISTS idx_post_likes_post ON post_likes(post_id);
+
+-- Grant necessary permissions
+GRANT ALL ON post_likes TO authenticated;
+GRANT USAGE ON ALL SEQUENCES IN SCHEMA public TO authenticated;
+
+-- Create or replace function to handle post likes
+CREATE OR REPLACE FUNCTION handle_post_like()
+RETURNS trigger AS $$
+BEGIN
+  IF TG_OP = 'INSERT' THEN
+    -- Increment likes count
+    UPDATE consultations
+    SET likes = COALESCE(likes, 0) + 1
+    WHERE id = NEW.post_id;
+    
+    -- Update author's reputation
+    UPDATE profiles
+    SET reputation_score = COALESCE(reputation_score, 0) + 1
+    WHERE id = (
+      SELECT author_id 
+      FROM consultations 
+      WHERE id = NEW.post_id
+    );
+  ELSIF TG_OP = 'DELETE' THEN
+    -- Decrement likes count
+    UPDATE consultations
+    SET likes = GREATEST(0, COALESCE(likes, 0) - 1)
+    WHERE id = OLD.post_id;
+    
+    -- Update author's reputation
+    UPDATE profiles
+    SET reputation_score = GREATEST(0, COALESCE(reputation_score, 0) - 1)
+    WHERE id = (
+      SELECT author_id 
+      FROM consultations 
+      WHERE id = OLD.post_id
+    );
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Drop existing trigger if any
+DROP TRIGGER IF EXISTS post_like_trigger ON post_likes;
+
+-- Create trigger for post likes
+CREATE TRIGGER post_like_trigger
+  AFTER INSERT OR DELETE ON post_likes
+  FOR EACH ROW
+  EXECUTE FUNCTION handle_post_like();
