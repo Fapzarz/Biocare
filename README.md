@@ -1,7 +1,7 @@
 # Biocare App
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-green)
-![Build Status](https://img.shields.io/github/actions/workflow/status/<username>/biocare-app/ci.yml?branch=main)
+![Build Status](https://img.shields.io/github/actions/workflow/status/Fapzarz/biocare/ci.yml?branch=main)
 ![Coverage Status](https://img.shields.io/badge/coverage-—%25-brightgreen)
 
 ## Table of Contents
@@ -9,7 +9,6 @@
 - [Overview](#overview)
 - [Features](#features)
 - [Tech Stack](#tech-stack)
-- [Demo](#demo)
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
 - [Configuration](#configuration)
@@ -44,10 +43,6 @@ Biocare is a modern, fast, and responsive healthcare management application buil
 | Testing        | Vitest, Playwright   |
 | Linting        | ESLint               |
 
-## Demo
-
-![App Screenshot](./docs/screenshot.png)
-
 ## Prerequisites
 
 - Node.js >= 20
@@ -57,8 +52,8 @@ Biocare is a modern, fast, and responsive healthcare management application buil
 
 1. Clone the repo:
    ```bash
-   git clone https://github.com/<username>/biocare-app.git
-   cd biocare-app
+   git clone https://github.com/Fapzarz/biocare.git
+   cd biocare
    ```
 2. Copy the example env and fill in your credentials:
    ```bash
@@ -123,5 +118,5 @@ This project is licensed under the MIT License. See the [LICENSE](./LICENSE) fil
 
 ## Contact
 
-Maintainer: [Your Name](mailto:your.email@example.com)
-GitHub: [@<username>](https://github.com/<username>)
+Maintainer: [Farraz Firdaus](mailto:farrazfirdaus129@gmail.com)
+GitHub: [@Fapzarz](https://github.com/Fapzarz)
