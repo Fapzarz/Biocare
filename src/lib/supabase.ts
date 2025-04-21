@@ -1,10 +1,12 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './database.types';
+import { supabase as mockSupabase } from './mockSupabase';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+const useMock = import.meta.env.VITE_USE_MOCK_SUPABASE === 'true';
 
-if (!supabaseUrl || !supabaseAnonKey) {
+if (!useMock && (!supabaseUrl || !supabaseAnonKey)) {
   throw new Error('Missing Supabase environment variables');
 }
 
@@ -13,118 +15,120 @@ const CACHE_TIME = 5 * 60 * 1000; // 5 minutes
 const cache: { [key: string]: { data: any; timestamp: number } } = {};
 
 // Create client with improved retry logic and error handling
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: true
-  },
-  global: {
-    fetch: async (url, options = {}) => {
-      const MAX_RETRIES = 5;
-      const INITIAL_RETRY_DELAY = 1000;
-      const MAX_RETRY_DELAY = 30000; // 30 seconds max delay
+export const supabase = useMock
+  ? mockSupabase
+  : createClient<Database>(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: true
+    },
+    global: {
+      fetch: async (url, options = {}) => {
+        const MAX_RETRIES = 5;
+        const INITIAL_RETRY_DELAY = 1000;
+        const MAX_RETRY_DELAY = 30000; // 30 seconds max delay
 
-      let lastError;
-      for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-        try {
-          const startTime = performance.now();
+        let lastError;
+        for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+          try {
+            const startTime = performance.now();
 
-          // Check cache for GET requests
-          if (options.method === 'GET') {
-            const cacheKey = `${url}_${JSON.stringify(options)}`;
-            const cached = cache[cacheKey];
+            // Check cache for GET requests
+            if (options.method === 'GET') {
+              const cacheKey = `${url}_${JSON.stringify(options)}`;
+              const cached = cache[cacheKey];
+              
+              if (cached && Date.now() - cached.timestamp < CACHE_TIME) {
+                return new Response(JSON.stringify(cached.data), {
+                  headers: { 'Content-Type': 'application/json' }
+                });
+              }
+            }
+
+            // Add retry attempt header
+            const headers = new Headers(options.headers);
+            headers.set('X-Retry-Attempt', attempt.toString());
+            options.headers = headers;
+
+            // Exponential backoff with jitter
+            if (attempt > 0) {
+              const delay = Math.min(
+                INITIAL_RETRY_DELAY * Math.pow(2, attempt) + Math.random() * 1000,
+                MAX_RETRY_DELAY
+              );
+              await new Promise(resolve => setTimeout(resolve, delay));
+            }
+
+            const response = await fetch(url, {
+              ...options,
+              signal: AbortSignal.timeout(30000) // 30 second timeout
+            });
+
+            const endTime = performance.now();
+            const duration = endTime - startTime;
+
+            // Log performance metrics
+            if (duration > 1000) {
+              console.warn(`Slow API Call to ${url}: ${duration.toFixed(2)}ms`);
+            } else {
+              console.debug(`API Call to ${url}: ${duration.toFixed(2)}ms`);
+            }
+
+            // Cache successful GET responses
+            if (options.method === 'GET' && response.ok) {
+              const cacheKey = `${url}_${JSON.stringify(options)}`;
+              const data = await response.clone().json();
+              cache[cacheKey] = { data, timestamp: Date.now() };
+            }
+
+            // Handle rate limiting
+            if (response.status === 429) {
+              const retryAfter = parseInt(response.headers.get('Retry-After') || '5');
+              await new Promise(resolve => setTimeout(resolve, retryAfter * 1000));
+              continue;
+            }
+
+            // Handle authentication errors
+            if (response.status === 401) {
+              // Clear session and redirect to login
+              await supabase.auth.signOut();
+              window.location.href = '/';
+              throw new Error('Authentication required');
+            }
+
+            // Handle other error responses
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            return response;
+          } catch (error) {
+            lastError = error;
             
-            if (cached && Date.now() - cached.timestamp < CACHE_TIME) {
-              return new Response(JSON.stringify(cached.data), {
-                headers: { 'Content-Type': 'application/json' }
-              });
+            // Don't retry on client errors
+            if (error instanceof TypeError && error.message === 'Failed to fetch') {
+              console.error('Network error:', error);
+              throw new Error('Network error. Please check your connection.');
+            }
+
+            // Don't retry on authentication errors
+            if (error instanceof Error && error.message === 'Authentication required') {
+              throw error;
+            }
+
+            // Continue retrying for other errors
+            if (attempt < MAX_RETRIES - 1) {
+              continue;
             }
           }
-
-          // Add retry attempt header
-          const headers = new Headers(options.headers);
-          headers.set('X-Retry-Attempt', attempt.toString());
-          options.headers = headers;
-
-          // Exponential backoff with jitter
-          if (attempt > 0) {
-            const delay = Math.min(
-              INITIAL_RETRY_DELAY * Math.pow(2, attempt) + Math.random() * 1000,
-              MAX_RETRY_DELAY
-            );
-            await new Promise(resolve => setTimeout(resolve, delay));
-          }
-
-          const response = await fetch(url, {
-            ...options,
-            signal: AbortSignal.timeout(30000) // 30 second timeout
-          });
-
-          const endTime = performance.now();
-          const duration = endTime - startTime;
-
-          // Log performance metrics
-          if (duration > 1000) {
-            console.warn(`Slow API Call to ${url}: ${duration.toFixed(2)}ms`);
-          } else {
-            console.debug(`API Call to ${url}: ${duration.toFixed(2)}ms`);
-          }
-
-          // Cache successful GET responses
-          if (options.method === 'GET' && response.ok) {
-            const cacheKey = `${url}_${JSON.stringify(options)}`;
-            const data = await response.clone().json();
-            cache[cacheKey] = { data, timestamp: Date.now() };
-          }
-
-          // Handle rate limiting
-          if (response.status === 429) {
-            const retryAfter = parseInt(response.headers.get('Retry-After') || '5');
-            await new Promise(resolve => setTimeout(resolve, retryAfter * 1000));
-            continue;
-          }
-
-          // Handle authentication errors
-          if (response.status === 401) {
-            // Clear session and redirect to login
-            await supabase.auth.signOut();
-            window.location.href = '/';
-            throw new Error('Authentication required');
-          }
-
-          // Handle other error responses
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-
-          return response;
-        } catch (error) {
-          lastError = error;
-          
-          // Don't retry on client errors
-          if (error instanceof TypeError && error.message === 'Failed to fetch') {
-            console.error('Network error:', error);
-            throw new Error('Network error. Please check your connection.');
-          }
-
-          // Don't retry on authentication errors
-          if (error instanceof Error && error.message === 'Authentication required') {
-            throw error;
-          }
-
-          // Continue retrying for other errors
-          if (attempt < MAX_RETRIES - 1) {
-            continue;
-          }
         }
-      }
 
-      console.error('API Error:', lastError);
-      throw lastError;
+        console.error('API Error:', lastError);
+        throw lastError;
+      }
     }
-  }
-});
+  });
 
 // Cache cleanup
 setInterval(() => {
